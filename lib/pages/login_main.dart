@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:tutorpus/utils/oval_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tutorpus/theme/colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:tutorpus/utils/oval_button.dart';
+// import 경로 수정
 
 class LoginMain extends StatelessWidget {
   const LoginMain({super.key});
 
   void _login() {}
 
-//로그인 함수 (진짜)
+// 로그인 함수 (진짜)
   // void _login(String email, String password) {
   //   final url = "";
   //   final Map<String, dynamic> data = {
@@ -77,8 +78,18 @@ class LoginMain extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 40),
-                ovalButton('Log in', blue3, _login),
-                ovalButton('Google Login', Colors.white, _login),
+                OvalButton(
+                  text: 'Log in',
+                  backgroundColor: blue3,
+                  textColor: Colors.black,
+                  onPressed: _login,
+                ),
+                OvalButton(
+                  text: 'Google Login',
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                  onPressed: _login,
+                ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
@@ -99,7 +110,6 @@ class LoginMain extends StatelessWidget {
                         ),
                       ),
                       TextButton(
-                        //잠깐 들어갈 용도
                         onPressed: _enter,
                         child: const Text(
                           "가짜",
@@ -113,32 +123,6 @@ class LoginMain extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Padding ovalButton(String text, Color backgroundColor, Function function) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: SizedBox(
-        width: double.infinity,
-        height: 50,
-        child: ElevatedButton(
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(backgroundColor),
-          ),
-          onPressed: () async {
-            _login();
-          },
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
             ),
           ),
         ),

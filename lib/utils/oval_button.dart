@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+export 'oval_button.dart';
 
 class OvalButton extends StatelessWidget {
   final String text;

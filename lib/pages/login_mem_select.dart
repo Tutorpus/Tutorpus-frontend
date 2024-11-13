@@ -3,9 +3,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tutorpus/theme/colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:tutorpus/utils/oval_button.dart';
 
 class LoginMemSelcect extends StatelessWidget {
   const LoginMemSelcect({super.key});
+
+  void statStu() {}
+  void statTch() {}
 
   @override
   Widget build(BuildContext context) {
@@ -23,17 +27,25 @@ class LoginMemSelcect extends StatelessWidget {
                 ],
               ),
             ),
-            child: const SingleChildScrollView(
+            child: SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       width: 50,
-                    )
-              ,
-              
+                    ),
+                    OvalButton(
+                        text: 'students',
+                        backgroundColor: Colors.white,
+                        textColor: Colors.black,
+                        onPressed: statStu),
+                    OvalButton(
+                        text: 'Teachers',
+                        backgroundColor: Colors.white,
+                        textColor: Colors.black,
+                        onPressed: statStu)
                   ],
                 ),
               ),

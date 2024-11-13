@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginMain(), // 여기만 const 유지
+      home: LoginMemSelcect(), // 여기만 const 유지
     );
   }
 }
