@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tutorpus/pages/login_main.dart';
-import 'package:tutorpus/pages/login_mem_select.dart';
+import 'package:tutorpus/pages/signin_mem_select.dart';
 import 'package:tutorpus/pages/sample.dart';
 
 void main() {
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginMemSelcect(), // 여기만 const 유지
+      home: LoginMemSelect(), // 여기만 const 유지
     );
   }
 }
