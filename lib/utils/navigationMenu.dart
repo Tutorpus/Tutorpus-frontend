@@ -6,6 +6,7 @@ class NavigationMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       bottomNavigationBar: NavigationBar(
         destinations: [
           Container(color: Colors.green),

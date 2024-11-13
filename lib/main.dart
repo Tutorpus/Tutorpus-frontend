@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tutorpus/pages/login_main.dart';
+import 'package:tutorpus/pages/login_mem_select.dart';
+import 'package:tutorpus/pages/sample.dart';
 
 void main() {
   runApp(const MyApp());
