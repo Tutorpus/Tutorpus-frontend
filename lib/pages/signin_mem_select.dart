@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:tutorpus/pages/signup_stu.dart';
+import 'package:tutorpus/pages/signup_teacher.dart';
 import 'dart:convert';
 import 'package:tutorpus/utils/oval_button.dart';
 import 'package:tutorpus/theme/colors.dart';
@@ -74,7 +75,7 @@ class _SigninMemSelectState extends State<SigninMemSelect> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const SignupStu()));
+                                  builder: (context) => const SignupTch()));
                         }),
                     Row(
                       children: [

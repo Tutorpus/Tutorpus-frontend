@@ -4,7 +4,9 @@ import 'package:tutorpus/theme/colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:tutorpus/utils/oval_button.dart';
+import 'package:tutorpus/utils/input_field.dart';
 import 'package:tutorpus/pages/signin_mem_select.dart';
+
 // import 경로 수정
 
 class LoginMain extends StatefulWidget {
@@ -78,11 +80,11 @@ class _LoginMainState extends State<LoginMain> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: loginField('email'),
+                        child: inputField('email'),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: loginField('password'),
+                        child: inputField('password'),
                       ),
                     ],
                   ),
@@ -137,28 +139,6 @@ class _LoginMainState extends State<LoginMain> {
           ),
         ),
       ),
-    );
-  }
-
-  TextFormField loginField(String text) {
-    return TextFormField(
-      decoration: InputDecoration(
-        hintText: text,
-        hintStyle: const TextStyle(color: Colors.grey),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-          borderSide: const BorderSide(color: Colors.white, width: 2.0),
-        ),
-      ),
-      style: const TextStyle(color: Colors.black),
     );
   }
 }
