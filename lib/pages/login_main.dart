@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tutorpus/theme/colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:tutorpus/pages/home_tch.dart';
 import 'package:tutorpus/utils/oval_button.dart';
 import 'package:tutorpus/utils/input_field.dart';
 import 'package:tutorpus/pages/signin_mem_select.dart';
@@ -49,8 +50,6 @@ class _LoginMainState extends State<LoginMain> {
     );
   }
 
-  void _enter() {}
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +62,7 @@ class _LoginMainState extends State<LoginMain> {
             end: Alignment.bottomCenter,
             colors: [
               Colors.white,
-              Colors.lightBlueAccent,
+              Colors.blue,
             ],
           ),
         ),
@@ -109,7 +108,7 @@ class _LoginMainState extends State<LoginMain> {
                     children: [
                       const Text(
                         '아직 회원이 아니신가요?',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                        style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                       TextButton(
                         onPressed: _signin,
@@ -122,7 +121,13 @@ class _LoginMainState extends State<LoginMain> {
                         ),
                       ),
                       TextButton(
-                        onPressed: _enter,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const SigninMemSelect()),
+                          );
+                        },
                         child: const Text(
                           "가짜",
                           style: TextStyle(

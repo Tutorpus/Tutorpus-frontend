@@ -45,7 +45,7 @@ class _SigninMemSelectState extends State<SigninMemSelect> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(
-                      height: 100,
+                      height: 60,
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20),

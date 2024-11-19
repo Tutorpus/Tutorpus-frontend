@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:tutorpus/theme/colors.dart';
+import 'package:tutorpus/utils/input_field.dart';
+import 'package:tutorpus/utils/oval_button.dart';
 
 class SignupTch extends StatefulWidget {
   const SignupTch({super.key});
@@ -8,6 +11,10 @@ class SignupTch extends StatefulWidget {
 }
 
 class _SignupTchState extends State<SignupTch> {
+  _signup() {
+    print('sign in presssed');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +41,7 @@ class _SignupTchState extends State<SignupTch> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(
-                    height: 100,
+                    height: 60,
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 20),
@@ -42,14 +49,39 @@ class _SignupTchState extends State<SignupTch> {
                       children: [
                         Image.asset('assets/icons/octo_only_icon.png'),
                         const Text(
-                          '반갑습니다!',
+                          '만나서 반가워요!',
                           style: TextStyle(
                               fontSize: 25, fontWeight: FontWeight.w600),
                         ),
-                        const Text('어떤 회원으로 가입하시겠어요?',
+                        const Text('회원 정보를 입력해주세요.',
                             style: TextStyle(fontSize: 18)),
                       ],
                     ),
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  Column(
+                    children: [
+                      inputField('이름을 입력해주세요'),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      inputField('이메일을 입력해주세요'),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      inputField('비밀번호를 입력해주세요'),
+                      const SizedBox(
+                        height: 40,
+                      ),
+                      OvalButton(
+                        text: '회원가입하기',
+                        backgroundColor: blue3,
+                        textColor: white,
+                        onPressed: _signup,
+                      )
+                    ],
                   ),
                 ],
               ),
