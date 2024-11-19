@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:tutorpus/pages/signup_stu.dart';
 import 'dart:convert';
 import 'package:tutorpus/utils/oval_button.dart';
 import 'package:tutorpus/theme/colors.dart';
 import 'package:flutter/material.dart';
 
-void statStu() {}
-void statTch() {}
 bool _isChecked = false;
 
 class SigninMemSelect extends StatefulWidget {
   const SigninMemSelect({super.key});
-
   @override
   _SigninMemSelectState createState() => _SigninMemSelectState();
 }
@@ -20,9 +18,11 @@ class SigninMemSelect extends StatefulWidget {
 class _SigninMemSelectState extends State<SigninMemSelect> {
   @override
   Widget build(BuildContext context) {
+    signupStu() {}
+
     return Scaffold(
         appBar: AppBar(
-          title: const Text('회원'),
+          title: const Text(' '),
         ),
         body: Container(
             width: double.infinity, // 가로로 화면 전체를 채움
@@ -61,16 +61,21 @@ class _SigninMemSelectState extends State<SigninMemSelect> {
                         ],
                       ),
                     ),
-                    const OvalButton(
+                    OvalButton(
                         text: 'students',
                         backgroundColor: Colors.white,
                         textColor: Colors.black,
-                        onPressed: statStu),
-                    const OvalButton(
+                        onPressed: signupStu),
+                    OvalButton(
                         text: 'Teachers',
                         backgroundColor: Colors.white,
                         textColor: Colors.black,
-                        onPressed: statStu),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const SignupStu()));
+                        }),
                     Row(
                       children: [
                         const SizedBox(height: 30),

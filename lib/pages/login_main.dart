@@ -4,11 +4,16 @@ import 'package:tutorpus/theme/colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:tutorpus/utils/oval_button.dart';
+import 'package:tutorpus/pages/signin_mem_select.dart';
 // import 경로 수정
 
-class LoginMain extends StatelessWidget {
+class LoginMain extends StatefulWidget {
   const LoginMain({super.key});
+  @override
+  _LoginMainState createState() => _LoginMainState();
+}
 
+class _LoginMainState extends State<LoginMain> {
   void _login() {}
 
 // 로그인 함수 (진짜)
@@ -35,7 +40,12 @@ class LoginMain extends StatelessWidget {
   // }
   // }
 
-  void _signin() {}
+  void _signin() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SigninMemSelect()),
+    );
+  }
 
   void _enter() {}
 
