@@ -10,6 +10,9 @@ class HomeMain extends StatefulWidget {
 class _HomeMainState extends State<HomeMain> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+        body: Container(
+      child: const Text('this is main home'),
+    ));
   }
 }

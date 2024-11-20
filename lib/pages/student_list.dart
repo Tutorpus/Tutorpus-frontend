@@ -16,6 +16,9 @@ class _StuListState extends State<StuList> {
         title: const Text('students'),
         backgroundColor: white,
       ),
+      body: Container(
+        
+      )
     );
   }
 }
