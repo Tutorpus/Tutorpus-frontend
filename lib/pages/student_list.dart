@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tutorpus/theme/colors.dart';
 
 class StuList extends StatefulWidget {
   const StuList({super.key});
@@ -10,6 +11,11 @@ class StuList extends StatefulWidget {
 class _StuListState extends State<StuList> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('students'),
+        backgroundColor: white,
+      ),
+    );
   }
 }

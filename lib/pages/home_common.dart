@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tutorpus/pages/home_main.dart';
 import 'package:tutorpus/pages/notifications.dart';
+import 'package:tutorpus/pages/student_list.dart';
+import 'package:tutorpus/pages/calendar.dart';
 
 class HomeCommon extends StatefulWidget {
   const HomeCommon({super.key});
@@ -9,13 +12,13 @@ class HomeCommon extends StatefulWidget {
 }
 
 class _HomeCommonState extends State<HomeCommon> {
-  int currentPageIndex = 1;
+  int currentPageIndex = 0;
   int boo = 0;
   final List<Widget> screens = [
-    const HomeCommon(),
+    const HomeMain(),
     const Noti(),
-    // Calendar(),
-    // StuList(),
+    const Calendar(),
+    const StuList(),
   ];
   @override
   Widget build(BuildContext context) {

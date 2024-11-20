@@ -14,6 +14,7 @@ class _NotiState extends State<Noti> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('notifications'),
+        backgroundColor: white,
       ),
       body: Container(
         width: double.infinity, // 가로로 화면 전체를 채움
