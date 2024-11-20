@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tutorpus/theme/colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:tutorpus/pages/home_tch.dart';
+import 'package:tutorpus/pages/home_common.dart';
 import 'package:tutorpus/utils/oval_button.dart';
 import 'package:tutorpus/utils/input_field.dart';
 import 'package:tutorpus/pages/signin_mem_select.dart';
@@ -91,7 +91,7 @@ class _LoginMainState extends State<LoginMain> {
                 const SizedBox(height: 40),
                 OvalButton(
                   text: 'Log in',
-                  backgroundColor: blue3,
+                  backgroundColor: blue,
                   textColor: Colors.black,
                   onPressed: _login,
                 ),
@@ -125,7 +125,7 @@ class _LoginMainState extends State<LoginMain> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const SigninMemSelect()),
+                                builder: (context) => const HomeCommon()),
                           );
                         },
                         child: const Text(

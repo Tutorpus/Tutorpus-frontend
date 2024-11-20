@@ -77,7 +77,7 @@ class _SignupTchState extends State<SignupTch> {
                       ),
                       OvalButton(
                         text: '회원가입하기',
-                        backgroundColor: blue3,
+                        backgroundColor: blue,
                         textColor: white,
                         onPressed: _signup,
                       )
