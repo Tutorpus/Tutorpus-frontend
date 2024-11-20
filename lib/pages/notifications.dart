@@ -23,10 +23,20 @@ class _NotiState extends State<Noti> {
           child: Column(
             children: [
               NotificationBox(
-                  title: 'Meeting Reminder',
+                  title: '내일 수업 알림',
                   detail: '내일 수업이 있어요',
                   time: '2 hours ago',
-                  type: 'meeting'),
+                  type: 'calendar'),
+              NotificationBox(
+                  title: '숙제 알림',
+                  detail: '복지희 학생이 숙제를 완료했어요.',
+                  time: '2 hours ago',
+                  type: 'homework'),
+              NotificationBox(
+                  title: '피드백 알림',
+                  detail: '선생님이 피드백을 남겼어요!',
+                  time: '2 hours ago',
+                  type: 'feedback'),
             ],
           ),
         ),
@@ -43,17 +53,15 @@ class _NotiState extends State<Noti> {
     // 타입에 따른 이미지 경로 설정
     String imagePath;
     switch (type) {
-      case 'meeting':
-        imagePath = 'assets/images/meeting.png';
-        break;
       case 'homework':
         imagePath = 'assets/images/homework.png';
         break;
-      case 'event':
-        imagePath = 'assets/images/event.png';
+      case 'feedback':
+        imagePath = 'assets/images/feedback.png';
         break;
       default:
-        imagePath = 'assets/images/default.png'; // 기본 이미지
+        'calendar';
+        imagePath = 'assets/images/calendar.png'; // 기본 이미지
     }
 
     return Padding(
@@ -73,36 +81,33 @@ class _NotiState extends State<Noti> {
                 children: [
                   Text(
                     time,
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 14),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 5),
                 ],
               ),
               Row(
                 children: [
-                  Image.asset(
-                    imagePath, // 동적으로 설정된 이미지 경로
-                    width: 80,
-                  ),
                   Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          detail,
-                          style:
-                              const TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      ],
+                    padding: const EdgeInsets.only(right: 15.0),
+                    child: Image.asset(
+                      imagePath, // 동적으로 설정된 이미지 경로
+                      width: 30,
                     ),
                   ),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.w600),
+                  ),
                 ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 45.0),
+                child: Text(
+                  detail,
+                  style: const TextStyle(fontSize: 20, color: Colors.black),
+                ),
               ),
             ],
           ),

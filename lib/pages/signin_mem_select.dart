@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
-import 'package:tutorpus/pages/signup_stu.dart';
+import 'package:tutorpus/pages/signup_student.dart';
 import 'package:tutorpus/pages/signup_teacher.dart';
 import 'dart:convert';
 import 'package:tutorpus/utils/oval_button.dart';
