@@ -1,23 +1,18 @@
 import 'package:flutter/material.dart';
 
-TextFormField inputField(String text) {
-  return TextFormField(
+Widget inputField(String hintText,
+    {TextEditingController? controller, bool obscureText = false}) {
+  return TextField(
+    controller: controller, // 컨트롤러 추가
+    obscureText: obscureText,
     decoration: InputDecoration(
-      hintText: text,
-      hintStyle: const TextStyle(color: Colors.grey),
+      hintText: hintText,
       filled: true,
       fillColor: Colors.white,
-      contentPadding:
-          const EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30.0),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30.0),
-        borderSide: const BorderSide(color: Colors.white, width: 2.0),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30),
+        borderSide: BorderSide.none,
       ),
     ),
-    style: const TextStyle(color: Colors.black),
   );
 }

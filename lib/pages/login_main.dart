@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:tutorpus/theme/colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:tutorpus/pages/home_common.dart';
@@ -8,40 +6,79 @@ import 'package:tutorpus/utils/oval_button.dart';
 import 'package:tutorpus/utils/input_field.dart';
 import 'package:tutorpus/pages/signin_mem_select.dart';
 
-// import 경로 수정
-
 class LoginMain extends StatefulWidget {
   const LoginMain({super.key});
+
   @override
   _LoginMainState createState() => _LoginMainState();
 }
 
 class _LoginMainState extends State<LoginMain> {
-  void _login() {}
+  // TextEditingController 초기화
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-// 로그인 함수 (진짜)
-  // void _login(String email, String password) {
-  //   final url = "";
-  //   final Map<String, dynamic> data = {
-  //     'email': email,
-  //     'password': password,
-  //   }; // 서버로 데이터 전송
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
-  // try {
-  //   final response = await http.post(
-  //     url,
-  //     headers: {
-  //       'Content-Type': 'application/json'
-  //     },
-  //     body: {
-  //       jsonEncode(data)
-  //     }
-  //   );
-  // }
-  // catch{
+  // 로그인 함수
+  Future<void> _login(String email, String password) async {
+    const String url =
+        "http://ec2-43-201-11-102.ap-northeast-2.compute.amazonaws.com:8080/member/login";
 
-  // }
-  // }
+    final Map<String, dynamic> data = {
+      'email': email,
+      'password': password,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        print('로그인 성공: ${responseData['token']}');
+
+        // 홈 화면으로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeCommon()),
+        );
+      } else {
+        // 실패 시 서버 응답 메시지 출력
+        final errorData = jsonDecode(response.body);
+        print('로그인 실패: ${errorData['message']}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('로그인 실패: ${errorData['message']}')),
+        );
+      }
+    } catch (e) {
+      // 네트워크 또는 기타 에러 처리
+      print('에러 발생: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('서버 연결 중 에러가 발생했습니다.')),
+      );
+    }
+  }
+
+  void _handleLogin() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    if (email.isNotEmpty && password.isNotEmpty) {
+      _login(email, password);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('이메일과 비밀번호를 모두 입력해주세요.')),
+      );
+    }
+  }
 
   void _signin() {
     Navigator.push(
@@ -54,16 +91,13 @@ class _LoginMainState extends State<LoginMain> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        width: double.infinity, // 가로로 화면 전체를 채움
-        height: double.infinity, // 세로로 화면 전체를 채움
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.white,
-              Colors.blue,
-            ],
+            colors: [Colors.white, Colors.blue],
           ),
         ),
         child: SingleChildScrollView(
@@ -79,11 +113,18 @@ class _LoginMainState extends State<LoginMain> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: inputField('email'),
+                        child: inputField(
+                          'email',
+                          controller: _emailController,
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: inputField('password'),
+                        child: inputField(
+                          'password',
+                          controller: _passwordController,
+                          obscureText: true, // 비밀번호 입력 시 숨김 처리
+                        ),
                       ),
                     ],
                   ),
@@ -91,15 +132,20 @@ class _LoginMainState extends State<LoginMain> {
                 const SizedBox(height: 40),
                 OvalButton(
                   text: 'Log in',
-                  backgroundColor: blue,
-                  textColor: Colors.black,
-                  onPressed: _login,
+                  backgroundColor: Colors.blue,
+                  textColor: Colors.white,
+                  onPressed: _handleLogin,
                 ),
                 OvalButton(
                   text: 'Google Login',
                   backgroundColor: Colors.white,
                   textColor: Colors.black,
-                  onPressed: _login,
+                  onPressed: () {
+                    // Google 로그인 구현은 나중에 추가
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Google 로그인 기능은 준비 중입니다.')),
+                    );
+                  },
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -135,7 +181,7 @@ class _LoginMainState extends State<LoginMain> {
                             decoration: TextDecoration.underline,
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),

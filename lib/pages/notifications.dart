@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:tutorpus/theme/colors.dart';
 
 class Noti extends StatefulWidget {
@@ -9,38 +11,78 @@ class Noti extends StatefulWidget {
 }
 
 class _NotiState extends State<Noti> {
+  // 알림 데이터를 저장할 리스트
+  List<NotificationModel> notifications = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNotifications(); // 알림 데이터 불러오기
+  }
+
+  // 알림 데이터 가져오는 함수
+  Future<void> _fetchNotifications() async {
+    const String url =
+        'http://ec2-43-201-11-102.ap-northeast-2.compute.amazonaws.com:8080/notifications';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        List<dynamic> body = jsonDecode(response.body);
+        setState(() {
+          notifications = body
+              .map((notification) => NotificationModel.fromJson(notification))
+              .toList();
+        });
+      } else {
+        print('Failed to load notifications: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('알림 데이터를 불러오는데 실패했습니다.')),
+        );
+      }
+    } catch (e) {
+      print('Error fetching notifications: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('서버 연결 중 에러가 발생했습니다.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('notifications'),
+        title: const Text('Notifications'),
         backgroundColor: white,
       ),
       body: Container(
-        width: double.infinity, // 가로로 화면 전체를 채움
+        width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(color: Colors.white),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              NotificationBox(
-                  title: '내일 수업 알림',
-                  detail: '내일 수업이 있어요',
-                  time: '2 hours ago',
-                  type: 'calendar'),
-              NotificationBox(
-                  title: '숙제 알림',
-                  detail: '복지희 학생이 숙제를 완료했어요.',
-                  time: '2 hours ago',
-                  type: 'homework'),
-              NotificationBox(
-                  title: '피드백 알림',
-                  detail: '선생님이 피드백을 남겼어요!',
-                  time: '2 hours ago',
-                  type: 'feedback'),
-            ],
-          ),
-        ),
+        child: notifications.isEmpty
+            ? const Center(
+                child: Text(
+                  '알림이 없습니다!',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+              ) // 알림이 없을 때 메시지 표시
+            : SingleChildScrollView(
+                child: Column(
+                  children: notifications.map((notification) {
+                    return NotificationBox(
+                      title: notification.title,
+                      detail: notification.detail,
+                      time: notification.time,
+                      type: notification.type,
+                    );
+                  }).toList(),
+                ),
+              ),
       ),
     );
   }
@@ -49,10 +91,11 @@ class _NotiState extends State<Noti> {
     required String title,
     required String detail,
     required String time,
-    required String type, // 알림 타입 추가
+    required String type,
   }) {
-    // 타입에 따른 이미지 경로 설정
     String imagePath;
+
+    // 타입에 따른 이미지 경로 설정
     switch (type) {
       case 'homework':
         imagePath = 'assets/images/homework.png';
@@ -61,7 +104,6 @@ class _NotiState extends State<Noti> {
         imagePath = 'assets/images/feedback.png';
         break;
       default:
-        'calendar';
         imagePath = 'assets/images/calendar.png'; // 기본 이미지
     }
 
@@ -84,7 +126,6 @@ class _NotiState extends State<Noti> {
                     time,
                     style: const TextStyle(fontSize: 14),
                   ),
-                  const SizedBox(width: 5),
                 ],
               ),
               Row(
@@ -92,7 +133,7 @@ class _NotiState extends State<Noti> {
                   Padding(
                     padding: const EdgeInsets.only(right: 15.0),
                     child: Image.asset(
-                      imagePath, // 동적으로 설정된 이미지 경로
+                      imagePath,
                       width: 30,
                     ),
                   ),
@@ -114,6 +155,31 @@ class _NotiState extends State<Noti> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// 알림 데이터 모델 클래스
+class NotificationModel {
+  final String title;
+  final String detail;
+  final String time;
+  final String type;
+
+  NotificationModel({
+    required this.title,
+    required this.detail,
+    required this.time,
+    required this.type,
+  });
+
+  // JSON 데이터를 Dart 객체로 변환
+  factory NotificationModel.fromJson(Map<String, dynamic> json) {
+    return NotificationModel(
+      title: json['title'],
+      detail: json['detail'],
+      time: json['time'],
+      type: json['type'],
     );
   }
 }
