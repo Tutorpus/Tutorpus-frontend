@@ -34,10 +34,11 @@ class _StuListState extends State<StuList> {
     return Scaffold(
         appBar: AppBar(
           title: const Text('students'),
-          backgroundColor: white,
+          backgroundColor: Colors.white, // 배경색을 투명으로 설정
+          elevation: 0,
         ),
         body: Container(
-            color: white,
+            color: Colors.white,
             child: ListView.builder(
               itemCount: students.length,
               itemBuilder: (context, index) {
@@ -63,7 +64,11 @@ class _StuListState extends State<StuList> {
 
   Padding stuBox(String name, String subject, String school, int id) {
     return Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
         child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
