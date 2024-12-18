@@ -45,6 +45,7 @@ class _LoginMainState extends State<LoginMain> {
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         print('로그인 성공: ${responseData['token']}');
+        print(response.body);
 
         // 홈 화면으로 이동
         Navigator.pushReplacement(
