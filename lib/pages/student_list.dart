@@ -10,14 +10,14 @@ class Student {
   final String name;
   final String school;
   final String subject;
-  //final String color;
+  final String color;
 
   Student({
     required this.connectId,
     required this.name,
     required this.school,
     required this.subject,
-    // required this.color,
+    required this.color,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
@@ -26,7 +26,7 @@ class Student {
       name: json['name'],
       school: json['school'],
       subject: json['subject'],
-      //color: json['color'],
+      color: json['color'],
     );
   }
 }
@@ -84,9 +84,9 @@ class _StuListState extends State<StuList> {
     String subject,
     String email,
     List<Map<String, String>> timeSlots,
-    //String color,
+    String color,
   ) async {
-    const url = 'http://43.201.11.102:8080/student';
+    const url = 'http://43.201.11.102:8080/connect';
 
     try {
       final client = ApiClient();
@@ -98,7 +98,7 @@ class _StuListState extends State<StuList> {
           "subject": subject,
           "studentEmail": email,
           "timeSlots": timeSlots,
-          //"color": color,
+          "color": color,
         },
       );
       print('-------------------------------------');
@@ -111,6 +111,12 @@ class _StuListState extends State<StuList> {
             "timeSlots": timeSlots,
             //  "color": color,
           })}');
+
+      print('Response body: ${response.body}');
+      print('Response headers: ${response.headers}');
+      print('Response connection: ${response.persistentConnection}');
+      print('Response phrase: ${response.reasonPhrase}');
+      print('Response request: ${response.request}');
 
       if (response.statusCode == 201) {
         final Map<String, dynamic> responseData =
@@ -160,7 +166,7 @@ class _StuListState extends State<StuList> {
     final subjectController = TextEditingController();
     final emailController = TextEditingController();
     List<Map<String, String>> timeSlots = [];
-    Color selectedColor = Colors.blue; // Default color
+    Color selectedColor = Colors.blue; // 기본 색상
 
     showDialog(
       context: context,
@@ -184,10 +190,11 @@ class _StuListState extends State<StuList> {
             }
 
             return AlertDialog(
-              title: const Text('Add New Student'),
+              title: const Text('새로운 학생 추가'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextField(
                       controller: nameController,
@@ -207,8 +214,55 @@ class _StuListState extends State<StuList> {
                     ),
                     const SizedBox(height: 20),
                     const Text(
-                      'Time Slots:',
+                      '학생 색상:',
                       style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text(
+                                '학생 색상 선택',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                              content: SingleChildScrollView(
+                                child: ColorPicker(
+                                  pickerColor: selectedColor,
+                                  onColorChanged: (Color color) {
+                                    setState(() {
+                                      selectedColor = color;
+                                    });
+                                  },
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Select'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: selectedColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black12, width: 2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      '고정 수업 시간:',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
                     ...timeSlots.asMap().entries.map(
                       (entry) {
@@ -280,15 +334,15 @@ class _StuListState extends State<StuList> {
                 ),
                 TextButton(
                   onPressed: () {
-                    //final hexColor =
-                    //    '#${selectedColor.value.toRadixString(16).substring(2)}';
+                    final hexColor =
+                        '#${selectedColor.value.toRadixString(16).substring(2)}'; // 컬러를 HEX 코드로 변환
                     _addStudent(
                       nameController.text,
                       schoolController.text,
                       subjectController.text,
                       emailController.text,
                       timeSlots,
-                      // hexColor,
+                      hexColor,
                     );
                     Navigator.pop(context);
                   },
@@ -354,16 +408,16 @@ class _StuListState extends State<StuList> {
         ),
         child: Row(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(30.0),
-              child: SizedBox(
+            Padding(
+              padding: const EdgeInsets.all(30.0),
+              child: Container(
                 width: 50,
                 height: 50,
-                // decoration: BoxDecoration(
-                //   color:
-                //       Color(int.parse(student.color.replaceFirst('#', '0xff'))),
-                //   shape: BoxShape.circle,
-                // ),
+                decoration: BoxDecoration(
+                  color:
+                      Color(int.parse(student.color.replaceFirst('#', '0xff'))),
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
             Column(
