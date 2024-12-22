@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tutorpus/pages/home_common.dart';
-import 'home_main.dart';
+import 'home_common.dart';
 import 'package:tutorpus/utils/oval_button.dart';
 import 'package:tutorpus/utils/input_field.dart';
-import 'signin_mem_select.dart';
+import 'package:tutorpus/utils/api_client.dart'; // ApiClient import
 
 class LoginMain extends StatefulWidget {
   const LoginMain({super.key});
@@ -33,9 +32,14 @@ class _LoginMainState extends State<LoginMain> {
     super.dispose();
   }
 
+  /// 기존 토큰 확인 및 자동 로그인 처리
   Future<void> _checkExistingToken() async {
     final token = await _loadAuthToken();
     if (token != null) {
+      // ApiClient에 토큰 등록
+      ApiClient.setToken(token);
+
+      // 홈 화면으로 이동
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomeCommon()),
@@ -43,6 +47,7 @@ class _LoginMainState extends State<LoginMain> {
     }
   }
 
+  /// 로그인 요청 처리
   Future<void> _login(String email, String password) async {
     const String url =
         "http://ec2-43-201-11-102.ap-northeast-2.compute.amazonaws.com:8080/member/login";
@@ -63,11 +68,13 @@ class _LoginMainState extends State<LoginMain> {
         final responseData = json.decode(response.body);
         final String token = responseData['token'];
 
+        // SharedPreferences에 토큰 저장
         await _saveAuthToken('Bearer $token');
-        if (responseData['name'] != null) {
-          await _saveUserName(responseData['name']);
-        }
 
+        // ApiClient에 토큰 등록
+        ApiClient.setToken('Bearer $token');
+
+        // 홈 화면으로 이동
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeCommon()),
@@ -86,18 +93,13 @@ class _LoginMainState extends State<LoginMain> {
     }
   }
 
+  /// SharedPreferences에 토큰 저장
   Future<void> _saveAuthToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
-    print('Saved Token: $token'); // 디버깅 코드
   }
 
-  Future<void> _saveUserName(String name) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('name', name);
-    print('Saved Name: $name'); // 디버깅 코드
-  }
-
+  /// SharedPreferences에서 토큰 불러오기
   Future<String?> _loadAuthToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
@@ -168,45 +170,6 @@ class _LoginMainState extends State<LoginMain> {
                         textColor: Colors.white,
                         onPressed: _handleLogin,
                       ),
-                OvalButton(
-                  text: 'Google Login',
-                  backgroundColor: Colors.white,
-                  textColor: Colors.black,
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Google 로그인 기능은 준비 중입니다.')),
-                    );
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        '아직 회원이 아니신가요?',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SigninMemSelect(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "회원가입",
-                          style: TextStyle(
-                            fontSize: 16,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),

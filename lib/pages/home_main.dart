@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:tutorpus/pages/login_main.dart'; // 로그인 페이지 import
 
 class HomeMain extends StatefulWidget {
   const HomeMain({super.key});
@@ -19,47 +20,62 @@ class _HomeMainState extends State<HomeMain> {
   void initState() {
     super.initState();
     _loadUserData();
-    Future<void> checkSharedPreferences() async {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-      final name = prefs.getString('name');
+    print('initState called');
+  }
 
-      print('Token: $token');
-      print('Name: $name');
-    }
+  // SharedPreferences에서 토큰 가져오기
+  Future<String?> _getAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    print('_getAuthToken called');
+    return prefs.getString('token');
+  }
+
+  // SharedPreferences에서 유저 이름 가져오기
+  Future<String?> _getUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    print('_getUserName called');
+    return prefs.getString('name');
+  }
+
+  void _navigateToLogin() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginMain()),
+    );
   }
 
   // 1. SharedPreferences에서 유저 이름과 토큰 불러오기
   Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token'); // 저장된 토큰
-    final name = prefs.getString('name'); // 저장된 유저 이름
+    final token = await _getAuthToken(); // 저장된 토큰
+    final name = await _getUserName(); // 저장된 유저 이름
+    print(token);
 
     if (token != null && name != null) {
       setState(() {
         userName = name;
       });
-      _fetchConnectedStudents(token); // 학생 데이터 가져오기
+      _fetchConnectedStudents(token);
+      print('token is here');
+      print('called the name: $userName'); // 학생 데이터 가져오기
     } else {
       print('No user data found, please login.');
-      setState(() {
-        isLoading = false;
-      });
+      _navigateToLogin();
     }
   }
 
   // 2. 백엔드에서 연결된 학생 목록 가져오기
   Future<void> _fetchConnectedStudents(String token) async {
-    const url = 'http://43.201.11.102:8080/connected-students'; // 백엔드 API 주소
+    const url = 'http://43.201.11.102:8080/student'; // 백엔드 API 주소
 
     try {
       final response = await http.get(
         Uri.parse(url),
         headers: {
-          'Authorization': 'Bearer $token', // 인증 토큰 추가
+          'Authorization': token, // 인증 토큰 추가
           'Content-Type': 'application/json',
         },
       );
+      print('$token   header updated');
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -68,9 +84,16 @@ class _HomeMainState extends State<HomeMain> {
               data.map((student) => student['name'].toString()).toList();
           isLoading = false;
         });
+      } else if (response.statusCode == 401) {
+        // 토큰 만료
+        print('Token expired. Redirecting to login.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Session expired. Please login again.')),
+        );
+        _navigateToLogin();
       } else {
         print(
-            'Failed to load student list: ${response.reasonPhrase} /n body: ${response.body} /n ${response.statusCode}');
+            'Failed to load student list: ${response.reasonPhrase} / body: ${response.body} / status code: ${response.statusCode}');
         setState(() {
           isLoading = false;
         });
