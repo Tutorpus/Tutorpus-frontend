@@ -18,6 +18,7 @@ class _HomeMainState extends State<HomeMain> {
 
   @override
   void initState() {
+    print('----------------Home Main--------------');
     super.initState();
     _loadUserData();
     print('initState called');
@@ -48,7 +49,6 @@ class _HomeMainState extends State<HomeMain> {
   Future<void> _loadUserData() async {
     final token = await _getAuthToken(); // 저장된 토큰
     final name = await _getUserName(); // 저장된 유저 이름
-    print(token);
 
     if (token != null && name != null) {
       setState(() {
@@ -78,7 +78,7 @@ class _HomeMainState extends State<HomeMain> {
       print('$token   header updated');
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
         setState(() {
           studentNames =
               data.map((student) => student['name'].toString()).toList();

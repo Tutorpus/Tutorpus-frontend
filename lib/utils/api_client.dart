@@ -1,11 +1,11 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
   static String? _token;
 
-  // 토큰 설정 함수
+  // 토큰 설정 메서드
   static void setToken(String token) {
     _token = token;
   }
@@ -16,32 +16,35 @@ class ApiClient {
     _token = prefs.getString('token');
   }
 
-  // GET 요청
-  Future<http.Response> get(String url) async {
-    if (_token == null) {
-      await loadTokenFromStorage();
-    }
-    return http.get(
-      Uri.parse(url),
-      headers: {
-        'Authorization': _token ?? '',
-        'Content-Type': 'application/json',
-      },
-    );
-  }
-
-  // POST 요청
+  // POST 요청 메서드
   Future<http.Response> post(String url, Map<String, dynamic> body) async {
     if (_token == null) {
-      await loadTokenFromStorage();
+      await loadTokenFromStorage(); // 토큰 로드
     }
-    return http.post(
+    print('POST == Authorization Token: $_token');
+    return await http.post(
       Uri.parse(url),
       headers: {
-        'Authorization': _token ?? '',
+        'Authorization': _token ?? '', // 인증 토큰 추가
         'Content-Type': 'application/json',
       },
       body: jsonEncode(body),
+    );
+  }
+
+  // GET 요청 메서드 (기존 사용)
+  Future<http.Response> get(String url) async {
+    if (_token == null) {
+      await loadTokenFromStorage(); // 토큰 로드
+    }
+    print('GET == Authorization Token: $_token');
+
+    return await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': _token ?? '', // 인증 토큰 추가
+        'Content-Type': 'application/json',
+      },
     );
   }
 }
