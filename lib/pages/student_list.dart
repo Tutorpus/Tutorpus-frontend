@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tutorpus/pages/student_detail.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:tutorpus/pages/student_detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tutorpus/theme/colors.dart';
 
 class Student {
   final int connectId;
@@ -46,29 +48,52 @@ class _StuListState extends State<StuList> {
   @override
   void initState() {
     super.initState();
-    _fetchStudentList();
+    _fetchStudentList(); // 백엔드에서 데이터를 가져옵니다.
   }
 
+  // 백엔드에서 학생 데이터를 가져오는 메서드
   Future<void> _fetchStudentList() async {
-    const String url = 'http://43.201.11.102:8080/student';
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token'); // 저장된 토큰 가져오기
+
+    if (token == null) {
+      print('Token not found');
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    const url = 'http://43.201.11.102:8080/connected-students'; // API URL
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+      );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
+
         setState(() {
           students = data.map((json) => Student.fromJson(json)).toList();
           isLoading = false;
         });
       } else {
         print(
-            'Failed to load student list: ${response.body} code: ${response.statusCode}');
-        setState(() => isLoading = false);
+            'Failed to fetch students: ${response.reasonPhrase} code: ${response.statusCode}');
+        setState(() {
+          isLoading = false;
+        });
       }
     } catch (e) {
-      print('Error: $e');
-      setState(() => isLoading = false);
+      print('Error fetching students: $e');
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -81,25 +106,27 @@ class _StuListState extends State<StuList> {
         elevation: 0,
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: students.length,
-              itemBuilder: (context, index) {
-                final student = students[index];
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            StudentDetail(studentId: student.connectId),
-                      ),
+          ? const Center(child: CircularProgressIndicator()) // 로딩 상태
+          : students.isEmpty
+              ? const Center(child: Text('No students found')) // 학생 데이터 없음
+              : ListView.builder(
+                  itemCount: students.length,
+                  itemBuilder: (context, index) {
+                    final student = students[index];
+                    return InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                StudentDetail(studentId: student.connectId),
+                          ),
+                        );
+                      },
+                      child: _stuBox(student),
                     );
                   },
-                  child: _stuBox(student),
-                );
-              },
-            ),
+                ),
     );
   }
 
@@ -109,7 +136,7 @@ class _StuListState extends State<StuList> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: Color(int.parse(student.color.replaceFirst('#', '0xFF'))),
+          color: lightblue,
         ),
         child: Row(
           children: [
@@ -119,8 +146,10 @@ class _StuListState extends State<StuList> {
                 'http://43.201.11.102:8080${student.iconPath}',
                 width: 50,
                 height: 50,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.account_circle, size: 50),
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.account_circle,
+                  size: 50,
+                ),
               ),
             ),
             Column(

@@ -90,7 +90,7 @@ class _StudentDetailState extends State<StudentDetail> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('학생 상세 정보'),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.blue,
         elevation: 0.0,
       ),
       body: FutureBuilder<Student>(
@@ -153,7 +153,6 @@ class _StudentDetailState extends State<StudentDetail> {
               ],
             ),
           ),
-          const Spacer(),
           Expanded(
             child: Container(
               decoration: BoxDecoration(

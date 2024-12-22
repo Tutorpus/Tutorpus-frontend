@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:tutorpus/theme/colors.dart';
 
 class Noti extends StatefulWidget {
@@ -17,36 +15,39 @@ class _NotiState extends State<Noti> {
   @override
   void initState() {
     super.initState();
-    _fetchNotifications(); // 알림 데이터 불러오기
+    _loadFakeNotifications(); // 가짜 알림 데이터 로드
   }
 
-  // 알림 데이터 가져오는 함수
-  Future<void> _fetchNotifications() async {
-    const String url =
-        'http://ec2-43-201-11-102.ap-northeast-2.compute.amazonaws.com:8080/notifications';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        List<dynamic> body = jsonDecode(response.body);
-        setState(() {
-          notifications = body
-              .map((notification) => NotificationModel.fromJson(notification))
-              .toList();
-        });
-      } else {
-        print('Failed to load notifications: ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('알림 데이터를 불러오는데 실패했습니다.')),
-        );
-      }
-    } catch (e) {
-      print('Error fetching notifications: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('서버 연결 중 에러가 발생했습니다.')),
-      );
-    }
+  // 가짜 알림 데이터 로드 함수
+  void _loadFakeNotifications() {
+    setState(() {
+      notifications = [
+        NotificationModel(
+          title: '수업 알림',
+          detail: '내일 오전 10시에 수업이 있습니다.',
+          time: '2시간 전',
+          type: 'calendar',
+        ),
+        NotificationModel(
+          title: '숙제 알림',
+          detail: '복지희 학생이 숙제를 완료했습니다.',
+          time: '어제',
+          type: 'homework',
+        ),
+        NotificationModel(
+          title: '피드백 알림',
+          detail: '최윤서 학생에게 피드백을 남겼습니다.',
+          time: '3일 전',
+          type: 'feedback',
+        ),
+        NotificationModel(
+          title: '수업 알림',
+          detail: '내일 오전 10시에 수업이 있습니다.',
+          time: '1주일 전',
+          type: 'calendar',
+        ),
+      ];
+    });
   }
 
   @override
@@ -172,14 +173,4 @@ class NotificationModel {
     required this.time,
     required this.type,
   });
-
-  // JSON 데이터를 Dart 객체로 변환
-  factory NotificationModel.fromJson(Map<String, dynamic> json) {
-    return NotificationModel(
-      title: json['title'],
-      detail: json['detail'],
-      time: json['time'],
-      type: json['type'],
-    );
-  }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tutorpus/pages/home_common.dart';
+import 'home_main.dart';
 import 'package:tutorpus/utils/oval_button.dart';
 import 'package:tutorpus/utils/input_field.dart';
-import 'package:tutorpus/pages/signin_mem_select.dart';
+import 'signin_mem_select.dart';
 
 class LoginMain extends StatefulWidget {
   const LoginMain({super.key});
@@ -14,9 +16,15 @@ class LoginMain extends StatefulWidget {
 }
 
 class _LoginMainState extends State<LoginMain> {
-  // TextEditingController 초기화
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkExistingToken();
+  }
 
   @override
   void dispose() {
@@ -25,67 +33,88 @@ class _LoginMainState extends State<LoginMain> {
     super.dispose();
   }
 
-  // 로그인 함수
+  Future<void> _checkExistingToken() async {
+    final token = await _loadAuthToken();
+    if (token != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeCommon()),
+      );
+    }
+  }
+
   Future<void> _login(String email, String password) async {
     const String url =
         "http://ec2-43-201-11-102.ap-northeast-2.compute.amazonaws.com:8080/member/login";
 
-    final Map<String, dynamic> data = {
-      'email': email,
-      'password': password,
-    };
-
     try {
+      setState(() => _isLoading = true);
+
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
       );
 
       if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        print('로그인 성공: ${responseData['token']}');
-        print(response.body);
+        final responseData = json.decode(response.body);
+        final String token = responseData['token'];
 
-        // 홈 화면으로 이동
+        await _saveAuthToken('Bearer $token');
+        if (responseData['name'] != null) {
+          await _saveUserName(responseData['name']);
+        }
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeCommon()),
         );
       } else {
-        // 실패 시 서버 응답 메시지 출력
-        final errorData = jsonDecode(response.body);
-        print('로그인 실패: ${errorData['message']}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인 실패: ${errorData['message']}')),
+          const SnackBar(content: Text('로그인 실패. 이메일 또는 비밀번호를 확인하세요.')),
         );
       }
     } catch (e) {
-      // 네트워크 또는 기타 에러 처리
-      print('에러 발생: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('서버 연결 중 에러가 발생했습니다.')),
       );
+    } finally {
+      setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _saveAuthToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+    print('Saved Token: $token'); // 디버깅 코드
+  }
+
+  Future<void> _saveUserName(String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('name', name);
+    print('Saved Name: $name'); // 디버깅 코드
+  }
+
+  Future<String?> _loadAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
   }
 
   void _handleLogin() {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-    if (email.isNotEmpty && password.isNotEmpty) {
-      _login(email, password);
-    } else {
+
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('이메일과 비밀번호를 모두 입력해주세요.')),
       );
+      return;
     }
-  }
 
-  void _signin() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SigninMemSelect()),
-    );
+    _login(email, password);
   }
 
   @override
@@ -124,25 +153,26 @@ class _LoginMainState extends State<LoginMain> {
                         child: inputField(
                           'password',
                           controller: _passwordController,
-                          obscureText: true, // 비밀번호 입력 시 숨김 처리
+                          obscureText: true,
                         ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 40),
-                OvalButton(
-                  text: 'Log in',
-                  backgroundColor: Colors.blue,
-                  textColor: Colors.white,
-                  onPressed: _handleLogin,
-                ),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : OvalButton(
+                        text: 'Log in',
+                        backgroundColor: Colors.blue,
+                        textColor: Colors.white,
+                        onPressed: _handleLogin,
+                      ),
                 OvalButton(
                   text: 'Google Login',
                   backgroundColor: Colors.white,
                   textColor: Colors.black,
                   onPressed: () {
-                    // Google 로그인 구현은 나중에 추가
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Google 로그인 기능은 준비 중입니다.')),
                     );
@@ -158,25 +188,16 @@ class _LoginMainState extends State<LoginMain> {
                         style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                       TextButton(
-                        onPressed: _signin,
-                        child: const Text(
-                          "회원가입",
-                          style: TextStyle(
-                            fontSize: 16,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                      TextButton(
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const HomeCommon()),
+                              builder: (context) => const SigninMemSelect(),
+                            ),
                           );
                         },
                         child: const Text(
-                          "가짜",
+                          "회원가입",
                           style: TextStyle(
                             fontSize: 16,
                             decoration: TextDecoration.underline,

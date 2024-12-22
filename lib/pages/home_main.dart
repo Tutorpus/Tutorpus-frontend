@@ -69,7 +69,8 @@ class _HomeMainState extends State<HomeMain> {
           isLoading = false;
         });
       } else {
-        print('Failed to load student list: ${response.reasonPhrase}');
+        print(
+            'Failed to load student list: ${response.reasonPhrase} /n body: ${response.body} /n ${response.statusCode}');
         setState(() {
           isLoading = false;
         });

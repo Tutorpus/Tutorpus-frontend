@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:tutorpus/theme/colors.dart';
 
 void main() => runApp(const CalendarApp());
 
@@ -42,43 +43,47 @@ class _CalendarPageState extends State<CalendarPage> {
       appBar: AppBar(
         title: const Text('일정 관리'),
       ),
-      body: Column(
-        children: [
-          // 달력
-          TableCalendar(
-            focusedDay: _focusedDay,
-            firstDay: DateTime.utc(2020, 1, 1),
-            lastDay: DateTime.utc(2030, 12, 31),
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            },
-            eventLoader: (day) => _events[day] ?? [],
-            calendarStyle: const CalendarStyle(
-              selectedDecoration: BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
+      body: Container(
+        decoration: const BoxDecoration(color: Colors.white),
+        child: Column(
+          children: [
+            // 달력
+            TableCalendar(
+              focusedDay: _focusedDay,
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+              },
+              eventLoader: (day) => _events[day] ?? [],
+              calendarStyle: const CalendarStyle(
+                selectedDecoration: BoxDecoration(
+                  color: Colors.blue,
+                  shape: BoxShape.circle,
+                ),
+                todayDecoration: BoxDecoration(
+                  color: Colors.lightBlueAccent,
+                  shape: BoxShape.circle,
+                ),
               ),
-              todayDecoration: BoxDecoration(
-                color: Colors.lightBlueAccent,
-                shape: BoxShape.circle,
+              headerStyle: const HeaderStyle(
+                titleCentered: true,
+                formatButtonVisible: false,
               ),
             ),
-            headerStyle: const HeaderStyle(
-              titleCentered: true,
-              formatButtonVisible: false,
-            ),
-          ),
-          const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-          // 선택된 날짜의 일정 목록
-          _buildEventList(),
-        ],
+            // 선택된 날짜의 일정 목록
+            _buildEventList(),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: blue,
         onPressed: () => _showAddScheduleDialog(context),
         child: const Icon(Icons.add),
       ),
