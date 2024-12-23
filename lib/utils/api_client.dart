@@ -5,46 +5,67 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiClient {
   static String? _token;
 
-  // 토큰 설정 메서드
+  /// 토큰 설정 메서드
   static void setToken(String token) {
     _token = token;
   }
 
-  // SharedPreferences에서 토큰 로드
+  /// SharedPreferences에서 토큰 로드
   static Future<void> loadTokenFromStorage() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('token');
+    print('Loaded Token from Storage: $_token');
   }
 
-  // POST 요청 메서드
+  /// POST 요청 메서드
   Future<http.Response> post(String url, Map<String, dynamic> body) async {
-    if (_token == null) {
-      await loadTokenFromStorage(); // 토큰 로드
+    await _ensureTokenLoaded();
+
+    try {
+      print('POST Request URL: $url');
+      print('POST Request Body: $body');
+      return await http.post(
+        Uri.parse(url),
+        headers: _buildHeaders(),
+        body: jsonEncode(body),
+      );
+    } catch (e) {
+      print('POST Request Failed: $e');
+      rethrow; // 예외를 호출 측으로 전달
     }
-    print('POST == Authorization Token: $_token');
-    return await http.post(
-      Uri.parse(url),
-      headers: {
-        'Authorization': _token ?? '', // 인증 토큰 추가
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(body),
-    );
   }
 
-  // GET 요청 메서드 (기존 사용)
+  /// GET 요청 메서드
   Future<http.Response> get(String url) async {
-    if (_token == null) {
-      await loadTokenFromStorage(); // 토큰 로드
-    }
-    print('GET == Authorization Token: $_token');
+    await _ensureTokenLoaded();
 
-    return await http.get(
-      Uri.parse(url),
-      headers: {
-        'Authorization': _token ?? '', // 인증 토큰 추가
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      print('GET Request URL: $url');
+      return await http.get(
+        Uri.parse(url),
+        headers: _buildHeaders(),
+      );
+    } catch (e) {
+      print('GET Request Failed: $e');
+      rethrow; // 예외를 호출 측으로 전달
+    }
+  }
+
+  /// 토큰이 로드되지 않았으면 로드
+  Future<void> _ensureTokenLoaded() async {
+    if (_token == null) {
+      await loadTokenFromStorage();
+    }
+  }
+
+  /// 공통 헤더 빌드
+  Map<String, String> _buildHeaders() {
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+    if (_token != null && _token!.isNotEmpty) {
+      headers['Authorization'] = _token!;
+    }
+    return headers;
   }
 }

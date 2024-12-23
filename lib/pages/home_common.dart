@@ -47,6 +47,7 @@ class _HomeCommonState extends State<HomeCommon> {
   Future<Map<String, String>> _getHeaders() async {
     final token = await _getAuthToken();
     if (token == null || token.isEmpty) {
+      print('No token found');
       throw Exception('No token found');
     }
     return {

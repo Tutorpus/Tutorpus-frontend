@@ -112,6 +112,7 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('일정 관리'),
+        backgroundColor: white,
       ),
       body: Container(
         decoration: const BoxDecoration(color: Colors.white),
@@ -182,6 +183,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 formatButtonVisible: false,
               ),
             ),
+
             const SizedBox(height: 10),
 
             // 선택된 날짜의 이벤트 리스트
@@ -199,38 +201,148 @@ class _CalendarPageState extends State<CalendarPage> {
     final selectedEvents = _events[normalizedSelectedDay] ?? [];
     return Expanded(
       child: Container(
+        padding: const EdgeInsets.all(25.0),
         decoration: const BoxDecoration(
           color: lightblue,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
           ),
         ),
-        child: selectedEvents.isEmpty
-            ? const Center(
-                child: Text(
-                  '선택된 날짜의 일정이 없습니다.',
-                  style: TextStyle(fontSize: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _selectedDay != null
+                      ? '${_selectedDay!.month}월 ${_selectedDay!.day}일'
+                      : '날짜를 선택하세요',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: darkestblue,
+                  ),
                 ),
-              )
-            : ListView.builder(
-                itemCount: selectedEvents.length,
-                itemBuilder: (context, index) {
-                  final event = selectedEvents[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: event.color,
-                      radius: 8,
+                IconButton(
+                  icon: const Icon(Icons.add_circle,
+                      color: darkestblue, size: 28),
+                  onPressed: () => _showAddEventDialog(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // 선택된 날짜의 이벤트 리스트
+            Expanded(
+              child: selectedEvents.isEmpty
+                  ? const Center(
+                      child: Text(
+                        '선택된 날짜의 일정이 없습니다.',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: selectedEvents.length,
+                      itemBuilder: (context, index) {
+                        final event = selectedEvents[index];
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: event.color,
+                            radius: 10,
+                          ),
+                          title: Text(
+                            event.title,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(event.time),
+                        );
+                      },
                     ),
-                    title: Text(
-                      event.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(event.time),
-                  );
-                },
-              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  void _showAddEventDialog() {
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController timeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Text('수업 추가'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '날짜: ${_selectedDay != null ? "${_selectedDay!.year}/${_selectedDay!.month}/${_selectedDay!.day}" : "날짜를 선택하세요"}',
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: '학생 선택'),
+                  items: studentNames.entries.map((entry) {
+                    return DropdownMenuItem<String>(
+                      value: entry.key.toString(),
+                      child: Text(entry.value),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    // 선택된 학생 ID 처리
+                  },
+                ),
+                TextField(
+                  controller: timeController,
+                  decoration: const InputDecoration(labelText: '시간'),
+                ),
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: '메모'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                // 새로운 이벤트 추가
+                final event = Event(
+                  titleController.text,
+                  timeController.text,
+                  Colors.blue, // 색상은 기본 값으로 설정
+                );
+
+                setState(() {
+                  final normalizedSelectedDay = DateTime(
+                    _selectedDay!.year,
+                    _selectedDay!.month,
+                    _selectedDay!.day,
+                  );
+                  _events[normalizedSelectedDay] ??= [];
+                  _events[normalizedSelectedDay]!.add(event);
+                });
+
+                Navigator.pop(context);
+              },
+              child: const Text('생성'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
