@@ -4,32 +4,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart'; // 컬러 픽커 
 import 'package:tutorpus/pages/student_detail.dart';
 import 'package:tutorpus/theme/colors.dart';
 import 'package:tutorpus/utils/api_client.dart';
-
-class Student {
-  final int connectId;
-  final String name;
-  final String school;
-  final String subject;
-  final String color;
-
-  Student({
-    required this.connectId,
-    required this.name,
-    required this.school,
-    required this.subject,
-    required this.color,
-  });
-
-  factory Student.fromJson(Map<String, dynamic> json) {
-    return Student(
-      connectId: json['connectId'],
-      name: json['name'],
-      school: json['school'],
-      subject: json['subject'],
-      color: json['color'],
-    );
-  }
-}
+import 'package:tutorpus/models/student.dart';
 
 class StuList extends StatefulWidget {
   const StuList({super.key});
@@ -45,11 +20,11 @@ class _StuListState extends State<StuList> {
   @override
   void initState() {
     super.initState();
-    _fetchStudentList(); // 백엔드에서 데이터를 가져옵니다.
+    fetchStudentList(); // 백엔드에서 데이터를 가져옵니다.
   }
 
   // ApiClient를 이용해 학생 데이터를 가져오는 메서드
-  Future<void> _fetchStudentList() async {
+  Future<void> fetchStudentList() async {
     const url = 'http://43.201.11.102:8080/student'; // API URL
 
     try {
@@ -78,7 +53,7 @@ class _StuListState extends State<StuList> {
     }
   }
 
-  Future<void> _addStudent(
+  Future<void> addStudent(
     String name,
     String school,
     String subject,
@@ -160,7 +135,7 @@ class _StuListState extends State<StuList> {
     }
   }
 
-  void _showAddStudentDialog() {
+  void showAddStudentDialog() {
     final nameController = TextEditingController();
     final schoolController = TextEditingController();
     final subjectController = TextEditingController();
@@ -336,7 +311,7 @@ class _StuListState extends State<StuList> {
                   onPressed: () {
                     final hexColor =
                         '#${selectedColor.value.toRadixString(16).substring(2)}'; // 컬러를 HEX 코드로 변환
-                    _addStudent(
+                    addStudent(
                       nameController.text,
                       schoolController.text,
                       subjectController.text,
@@ -378,17 +353,24 @@ class _StuListState extends State<StuList> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  StudentDetail(studentId: student.connectId),
+                              builder: (context) => StudentDetail(
+                                student: Student(
+                                  connectId: student.connectId,
+                                  name: student.name,
+                                  school: student.school,
+                                  subject: student.subject,
+                                  color: student.color,
+                                ),
+                              ),
                             ),
                           );
                         },
-                        child: _stuBox(student),
+                        child: stuBox(student),
                       );
                     },
                   ),
         floatingActionButton: FloatingActionButton(
-          onPressed: _showAddStudentDialog, // 다이얼로그 표시
+          onPressed: showAddStudentDialog, // 다이얼로그 표시
           backgroundColor: Colors.blue,
           child: const Icon(
             Icons.add, // + 아이콘
@@ -398,7 +380,7 @@ class _StuListState extends State<StuList> {
         ));
   }
 
-  Padding _stuBox(Student student) {
+  Padding stuBox(Student student) {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Container(
@@ -433,8 +415,8 @@ class _StuListState extends State<StuList> {
                 ),
                 Row(
                   children: [
-                    _listAttr(student.school),
-                    _listAttr(student.subject)
+                    listAttr(student.school),
+                    listAttr(student.subject)
                   ],
                 )
               ],
@@ -445,7 +427,7 @@ class _StuListState extends State<StuList> {
     );
   }
 
-  Text _listAttr(String attr) {
+  Text listAttr(String attr) {
     return Text(
       '#$attr ',
       style: const TextStyle(fontSize: 16, color: Colors.black54),
