@@ -79,9 +79,8 @@ class _CalendarPageState extends State<CalendarPage> {
         setState(() {
           _events.clear();
           for (final key in data.keys) {
-            final int studentId = int.parse(key); // key를 학생 ID로 사용
-            final studentName =
-                studentNames[studentId] ?? 'Unknown Student'; // 이름 매칭
+            final int studentId = int.parse(key);
+            final studentName = studentNames[studentId] ?? 'Unknown Student';
 
             final color =
                 Color(int.parse(data[key]['color'].replaceFirst('#', '0xff')));
@@ -90,11 +89,10 @@ class _CalendarPageState extends State<CalendarPage> {
                 .toList();
 
             for (final date in dates) {
-              final normalizedDate =
-                  DateTime(date.year, date.month, date.day); // 시간 제거
+              final normalizedDate = DateTime(date.year, date.month, date.day);
               _events[normalizedDate] ??= [];
-              _events[normalizedDate]!.add(
-                  Event(studentName, '10:00 ~ 12:00', color)); // 이름으로 이벤트 제목 설정
+              _events[normalizedDate]!
+                  .add(Event(studentName, '10:00 ~ 12:00', color));
             }
           }
         });
@@ -118,13 +116,11 @@ class _CalendarPageState extends State<CalendarPage> {
         decoration: const BoxDecoration(color: Colors.white),
         child: Column(
           children: [
-            // 캘린더 위젯
             TableCalendar(
               focusedDay: _focusedDay,
               firstDay: DateTime.utc(2020, 1, 1),
               lastDay: DateTime.utc(2030, 12, 31),
-              selectedDayPredicate: (day) =>
-                  isSameDay(_selectedDay, day), // 날짜 선택 여부 확인
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
               onDaySelected: (selectedDay, focusedDay) {
                 setState(() {
                   _selectedDay = DateTime(
@@ -133,8 +129,9 @@ class _CalendarPageState extends State<CalendarPage> {
                 });
               },
               eventLoader: (day) {
-                final normalizedDate =
-                    DateTime(day.year, day.month, day.day); // 정규화
+                final normalizedDate = DateTime(day.year, day.month, day.day);
+                print(
+                    'Loading events for $normalizedDate: ${_events[normalizedDate]}');
                 return _events[normalizedDate] ?? [];
               },
               calendarBuilders: CalendarBuilders(
@@ -183,10 +180,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 formatButtonVisible: false,
               ),
             ),
-
             const SizedBox(height: 10),
-
-            // 선택된 날짜의 이벤트 리스트
             _buildEventList(),
           ],
         ),
@@ -197,7 +191,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget _buildEventList() {
     final normalizedSelectedDay = _selectedDay != null
         ? DateTime(_selectedDay!.year, _selectedDay!.month, _selectedDay!.day)
-        : DateTime.now(); // 정규화
+        : DateTime.now();
     final selectedEvents = _events[normalizedSelectedDay] ?? [];
     return Expanded(
       child: Container(
@@ -234,8 +228,6 @@ class _CalendarPageState extends State<CalendarPage> {
               ],
             ),
             const SizedBox(height: 10),
-
-            // 선택된 날짜의 이벤트 리스트
             Expanded(
               child: selectedEvents.isEmpty
                   ? const Center(
@@ -269,8 +261,9 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _showAddEventDialog() {
-    final TextEditingController titleController = TextEditingController();
     final TextEditingController timeController = TextEditingController();
+    final TextEditingController endTimeController = TextEditingController();
+    int? selectedStudentId;
 
     showDialog(
       context: context,
@@ -278,7 +271,7 @@ class _CalendarPageState extends State<CalendarPage> {
         return AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: const Text('수업 추가'),
+          title: const Text('새로운 수업 추가'),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,25 +280,29 @@ class _CalendarPageState extends State<CalendarPage> {
                   '날짜: ${_selectedDay != null ? "${_selectedDay!.year}/${_selectedDay!.month}/${_selectedDay!.day}" : "날짜를 선택하세요"}',
                 ),
                 const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
+                DropdownButtonFormField<int>(
                   decoration: const InputDecoration(labelText: '학생 선택'),
                   items: studentNames.entries.map((entry) {
-                    return DropdownMenuItem<String>(
-                      value: entry.key.toString(),
+                    return DropdownMenuItem<int>(
+                      value: entry.key,
                       child: Text(entry.value),
                     );
                   }).toList(),
                   onChanged: (value) {
-                    // 선택된 학생 ID 처리
+                    setState(() {
+                      selectedStudentId = value;
+                    });
                   },
                 ),
                 TextField(
                   controller: timeController,
-                  decoration: const InputDecoration(labelText: '시간'),
+                  decoration:
+                      const InputDecoration(labelText: '시작 시간 (HH:MM:SS)'),
                 ),
                 TextField(
-                  controller: titleController,
-                  decoration: const InputDecoration(labelText: '메모'),
+                  controller: endTimeController,
+                  decoration:
+                      const InputDecoration(labelText: '종료 시간 (HH:MM:SS)'),
                 ),
               ],
             ),
@@ -318,25 +315,61 @@ class _CalendarPageState extends State<CalendarPage> {
               child: const Text('취소'),
             ),
             TextButton(
-              onPressed: () {
-                // 새로운 이벤트 추가
-                final event = Event(
-                  titleController.text,
-                  timeController.text,
-                  Colors.blue, // 색상은 기본 값으로 설정
-                );
-
-                setState(() {
-                  final normalizedSelectedDay = DateTime(
-                    _selectedDay!.year,
-                    _selectedDay!.month,
-                    _selectedDay!.day,
+              onPressed: () async {
+                if (selectedStudentId == null ||
+                    timeController.text.isEmpty ||
+                    endTimeController.text.isEmpty ||
+                    _selectedDay == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('모든 입력값을 채워주세요.')),
                   );
-                  _events[normalizedSelectedDay] ??= [];
-                  _events[normalizedSelectedDay]!.add(event);
-                });
+                  return;
+                }
 
-                Navigator.pop(context);
+                final requestData = {
+                  "addDate":
+                      "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}",
+                  "connectId": selectedStudentId,
+                  "startTime": timeController.text,
+                  "endTime": endTimeController.text,
+                };
+
+                try {
+                  const url = 'http://43.201.11.102:8080/schedule/add';
+                  final response = await ApiClient().post(url, requestData);
+
+                  if (response.statusCode == 200) {
+                    final studentName = studentNames[selectedStudentId];
+                    final normalizedDate = DateTime(
+                      _selectedDay!.year,
+                      _selectedDay!.month,
+                      _selectedDay!.day,
+                    );
+
+                    setState(() {
+                      _events[normalizedDate] ??= [];
+                      _events[normalizedDate]!.add(
+                        Event(
+                            studentName!,
+                            '${timeController.text} ~ ${endTimeController.text}',
+                            Colors.blue),
+                      );
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('수업이 성공적으로 추가되었습니다.')),
+                    );
+                  } else {
+                    throw Exception('Failed to add schedule');
+                  }
+                } catch (e) {
+                  print('Error adding schedule: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('수업 추가에 실패했습니다.')),
+                  );
+                } finally {
+                  Navigator.pop(context);
+                }
               },
               child: const Text('생성'),
             ),
