@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:tutorpus/theme/colors.dart';
+import 'package:tutorpus/utils/api_client.dart';
+import 'dart:convert';
 
 void main() => runApp(const CalendarApp());
 
@@ -30,12 +32,50 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  // 일정 데이터 (예시)
-  final Map<DateTime, List<Event>> _events = {
-    DateTime.utc(2024, 9, 18): [
-      Event('김이화', '11:00 ~ 12:30', '수학 수업'),
-    ],
-  };
+  final Map<DateTime, List<Event>> _events = {};
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSchedule(_focusedDay.year, _focusedDay.month);
+  }
+
+  Future<void> fetchSchedule(int year, int month) async {
+    final url = 'http://43.201.11.102:8080/schedule/$year/$month';
+
+    try {
+      final response = await ApiClient().get(url);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Fetched schedule data: $data');
+
+        setState(() {
+          _events.clear();
+          for (final key in data.keys) {
+            final color =
+                Color(int.parse(data[key]['color'].replaceFirst('#', '0xff')));
+            final dates = (data[key]['dates'] as List<dynamic>)
+                .map((date) => DateTime.parse(date))
+                .toList();
+
+            for (final date in dates) {
+              final normalizedDate =
+                  DateTime(date.year, date.month, date.day); // 시간 제거
+              _events[normalizedDate] ??= [];
+              _events[normalizedDate]!
+                  .add(Event('Event $key', '', '', color: color));
+            }
+          }
+        });
+
+        print('Mapped events: $_events');
+      } else {
+        throw Exception('Failed to load schedule');
+      }
+    } catch (e) {
+      print('Error fetching schedule: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +87,6 @@ class _CalendarPageState extends State<CalendarPage> {
         decoration: const BoxDecoration(color: Colors.white),
         child: Column(
           children: [
-            // 달력
             TableCalendar(
               focusedDay: _focusedDay,
               firstDay: DateTime.utc(2020, 1, 1),
@@ -60,6 +99,40 @@ class _CalendarPageState extends State<CalendarPage> {
                 });
               },
               eventLoader: (day) => _events[day] ?? [],
+              calendarBuilders: CalendarBuilders(
+                markerBuilder: (context, date, events) {
+                  final normalizedDate =
+                      DateTime(date.year, date.month, date.day); // 시간 제거
+                  final eventList = _events[normalizedDate] ?? [];
+                  print(
+                      'Marker builder called for date: $normalizedDate with events: $eventList');
+
+                  if (eventList.isNotEmpty) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: eventList.map((event) {
+                        final eventColor = (event).color;
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 1.0),
+                          width: 6.0,
+                          height: 6.0,
+                          decoration: BoxDecoration(
+                            color: eventColor,
+                            shape: BoxShape.circle,
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  }
+                  return null;
+                },
+              ),
+              onPageChanged: (focusedDay) {
+                setState(() {
+                  _focusedDay = focusedDay;
+                });
+                fetchSchedule(focusedDay.year, focusedDay.month);
+              },
               calendarStyle: const CalendarStyle(
                 selectedDecoration: BoxDecoration(
                   color: Colors.blue,
@@ -76,24 +149,15 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
             ),
             const SizedBox(height: 10),
-
-            // 선택된 날짜의 일정 목록
             _buildEventList(),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: blue,
-        onPressed: () => _showAddScheduleDialog(context),
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
-  // 일정 리스트 빌더
   Widget _buildEventList() {
     final selectedEvents = _events[_selectedDay] ?? [];
-
     return Expanded(
       child: ListView.builder(
         itemCount: selectedEvents.length,
@@ -101,117 +165,8 @@ class _CalendarPageState extends State<CalendarPage> {
           final event = selectedEvents[index];
           return ListTile(
             title: Text(event.title),
-            subtitle: Text('${event.time} - ${event.detail}'),
-            trailing: PopupMenuButton(
-              onSelected: (value) {
-                if (value == 'edit') {
-                  _showEditScheduleDialog(context, event);
-                } else if (value == 'delete') {
-                  _deleteSchedule(event);
-                }
-              },
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'edit', child: Text('수정')),
-                PopupMenuItem(value: 'delete', child: Text('삭제')),
-              ],
-            ),
           );
         },
-      ),
-    );
-  }
-
-  // 일정 추가 팝업
-  void _showAddScheduleDialog(BuildContext context) {
-    final titleController = TextEditingController();
-    final timeController = TextEditingController();
-    final detailController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('수업 추가'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTextField(titleController, '학생 이름'),
-              _buildTextField(timeController, '시간 (예: 11:00 ~ 12:30)'),
-              _buildTextField(detailController, '세부 내용'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _events[_selectedDay ?? DateTime.now()] ??= [];
-                  _events[_selectedDay ?? DateTime.now()]!.add(Event(
-                    titleController.text,
-                    timeController.text,
-                    detailController.text,
-                  ));
-                });
-                Navigator.pop(context);
-              },
-              child: const Text('저장'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // 일정 수정 팝업
-  void _showEditScheduleDialog(BuildContext context, Event event) {
-    final titleController = TextEditingController(text: event.title);
-    final timeController = TextEditingController(text: event.time);
-    final detailController = TextEditingController(text: event.detail);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('수업 수정'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTextField(titleController, '학생 이름'),
-              _buildTextField(timeController, '시간 (예: 11:00 ~ 12:30)'),
-              _buildTextField(detailController, '세부 내용'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  event.title = titleController.text;
-                  event.time = timeController.text;
-                  event.detail = detailController.text;
-                });
-                Navigator.pop(context);
-              },
-              child: const Text('수정'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // 일정 삭제
-  void _deleteSchedule(Event event) {
-    setState(() {
-      _events[_selectedDay]?.remove(event);
-    });
-  }
-
-  Widget _buildTextField(TextEditingController controller, String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-            labelText: label, border: const OutlineInputBorder()),
       ),
     );
   }
@@ -221,6 +176,7 @@ class Event {
   String title;
   String time;
   String detail;
+  Color color;
 
-  Event(this.title, this.time, this.detail);
+  Event(this.title, this.time, this.detail, {required this.color});
 }
