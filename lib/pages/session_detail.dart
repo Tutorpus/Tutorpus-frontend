@@ -25,7 +25,7 @@ class SessionDetail extends StatefulWidget {
 
 class _SessionDetailState extends State<SessionDetail> {
   bool _isHomeworkSelected = true; // 현재 "숙제 LIST" 또는 "수업 피드백" 중 선택된 탭
-  late Future<Map<String, dynamic>> feedbackFuture;
+  late Future<List<Map<String, dynamic>>> feedbackFuture;
   Future<List<Map<String, dynamic>>>? homeworkFuture;
 
   @override
@@ -49,7 +49,7 @@ class _SessionDetailState extends State<SessionDetail> {
   }
 
   // 피드백 데이터를 가져오는 함수
-  Future<Map<String, dynamic>> fetchFeedback(
+  Future<List<Map<String, dynamic>>> fetchFeedback(
       int connectId, DateTime date, String startTime) async {
     final url =
         'http://43.201.11.102:8080/feedback/$connectId/${DateFormat('yyyy-MM-dd').format(date)}/$startTime';
@@ -58,13 +58,13 @@ class _SessionDetailState extends State<SessionDetail> {
 
     try {
       final response = await client.get(url);
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
-        final data =
-            jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-        return data;
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        if (data is List) {
+          return data.map((e) => e as Map<String, dynamic>).toList();
+        } else {
+          throw Exception('Expected a list but got: ${data.runtimeType}');
+        }
       } else {
         throw Exception('Failed to fetch feedback');
       }
@@ -292,7 +292,7 @@ class _SessionDetailState extends State<SessionDetail> {
 
   // 수업 피드백 리스트
   Widget _buildFeedbackList() {
-    return FutureBuilder<Map<String, dynamic>>(
+    return FutureBuilder<List<Map<String, dynamic>>>(
       future: feedbackFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -301,24 +301,40 @@ class _SessionDetailState extends State<SessionDetail> {
           print(snapshot.error);
           return const Center(child: Text('피드백 데이터를 불러오지 못했습니다.'));
         } else if (snapshot.hasData) {
-          final feedback = snapshot.data!;
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            color: Colors.lightBlue[50],
-            child: ListTile(
-              title: const Text(
-                '수업 피드백',
-                style: TextStyle(fontWeight: FontWeight.bold),
+          final feedbackList = snapshot.data!;
+          if (feedbackList.isEmpty) {
+            return const Center(
+              child: Text(
+                '수업 피드백이 없습니다.',
+                style: TextStyle(fontSize: 16, color: Colors.black),
               ),
-              subtitle: Text(
-                '참여도: ${feedback['participate']} (${feedback['participateScore']}점)\n'
-                '적용도: ${feedback['apply']} (${feedback['applyScore']}점)\n'
-                '숙제 수행: ${feedback['homework']} (${feedback['homeworkScore']}점)',
-              ),
-            ),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: feedbackList.length,
+            itemBuilder: (context, index) {
+              final feedback = feedbackList[index];
+              return Card(
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                color: Colors.lightBlue[50],
+                child: ListTile(
+                  title: const Text(
+                    '수업 피드백',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    '참여도: ${feedback['participate']} (${feedback['participateScore']}점)\n'
+                    '적용도: ${feedback['apply']} (${feedback['applyScore']}점)\n'
+                    '숙제 수행: ${feedback['homework']} (${feedback['homeworkScore']}점)',
+                  ),
+                ),
+              );
+            },
           );
         } else {
-          return const Center(child: Text('수업 피드백이 없습니다.'));
+          return const Center(child: Text('수업 피드백 데이터가 없습니다.'));
         }
       },
     );
