@@ -53,7 +53,7 @@ class _HomeMainState extends State<HomeMain> {
 
     if (token != null && name != null) {
       setState(() {
-        userName = name;
+        userName = utf8.decode(name.codeUnits); // UTF-8 디코딩
       });
       _fetchConnectedStudents(token);
       print('token is here');

@@ -7,6 +7,7 @@ import 'package:tutorpus/pages/notifications.dart';
 import 'package:tutorpus/pages/student_list.dart';
 import 'package:tutorpus/pages/calendar_page.dart';
 import 'package:tutorpus/pages/login_main.dart'; // 로그인 페이지 import
+import 'package:tutorpus/theme/colors.dart';
 
 class HomeCommon extends StatefulWidget {
   const HomeCommon({super.key});
@@ -96,13 +97,29 @@ class _HomeCommonState extends State<HomeCommon> {
     if (boo == 0) {
       return Scaffold(
         bottomNavigationBar: NavigationBar(
+          backgroundColor: Colors.white,
+          indicatorColor: lightblue,
           destinations: const [
-            NavigationDestination(icon: Icon(Icons.home), label: 'home'),
             NavigationDestination(
-                icon: Icon(Icons.notifications), label: 'noti'),
+              icon: Icon(Icons.home, color: Colors.black45),
+              label: 'home',
+              selectedIcon: Icon(Icons.home, color: darkestblue),
+            ),
             NavigationDestination(
-                icon: Icon(Icons.calendar_month), label: 'calander'),
-            NavigationDestination(icon: Icon(Icons.person), label: 'students'),
+              icon: Icon(Icons.notifications, color: Colors.black45),
+              label: 'noti',
+              selectedIcon: Icon(Icons.notifications, color: darkestblue),
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.calendar_month, color: Colors.black45),
+              label: 'calander',
+              selectedIcon: Icon(Icons.calendar_month, color: darkestblue),
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person, color: Colors.black45),
+              label: 'students',
+              selectedIcon: Icon(Icons.person, color: darkestblue),
+            ),
           ],
           selectedIndex: currentPageIndex,
           onDestinationSelected: (int index) {
