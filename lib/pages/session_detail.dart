@@ -78,7 +78,7 @@ class _SessionDetailState extends State<SessionDetail> {
   Future<List<Map<String, dynamic>>> fetchHomeworkList(
       int connectId, DateTime date) async {
     final url =
-        'http://localhost:8080/homework/$connectId/${DateFormat('yyyy-MM-dd').format(date)}';
+        'http://43.201.11.102:8080/homework/$connectId/${DateFormat('yyyy-MM-dd').format(date)}';
     print('Fetching homework from: $url'); // URL 로그 추가
     final client = ApiClient();
 
