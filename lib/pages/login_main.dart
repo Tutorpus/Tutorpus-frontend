@@ -57,25 +57,26 @@ class _LoginMainState extends State<LoginMain> {
 
       final response = await http.post(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
           'password': password,
         }),
       );
+      print('===============로그인 성공===============');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         final String token = responseData['token'];
         final String name = responseData['name']; // 사용자 이름
+        print('로그인 성공');
 
         // SharedPreferences에 토큰과 사용자 이름 저장
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', 'Bearer $token'); // 토큰 저장
+        await prefs.setString('token', token); // 순수 토큰 저장
         await prefs.setString('name', name); // 사용자 이름 저장
 
-        // ApiClient에 토큰 등록
-        ApiClient.setToken('Bearer $token');
+// ApiClient에 토큰 등록
+        ApiClient.setToken(token);
 
         // 홈 화면으로 이동
         Navigator.pushReplacement(

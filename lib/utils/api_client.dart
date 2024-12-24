@@ -64,7 +64,7 @@ class ApiClient {
       'Content-Type': 'application/json',
     };
     if (_token != null && _token!.isNotEmpty) {
-      headers['Authorization'] = _token!;
+      headers['Authorization'] = 'Bearer $_token'; // Bearer 키워드 추가
     }
     return headers;
   }

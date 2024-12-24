@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tutorpus/theme/colors.dart';
 import 'package:tutorpus/utils/api_client.dart';
 import 'package:tutorpus/models/student.dart';
-// API 클라이언트 추가
+import 'session_detail.dart'; // SessionDetail import
 
 class Session {
   final DateTime date;
@@ -203,11 +203,31 @@ class _StudentDetailState extends State<StudentDetail> {
                             itemCount: sessions.length,
                             itemBuilder: (context, index) {
                               final session = sessions[index];
-                              return sessionBox(
-                                session.getFormattedDate(),
-                                session.day, // 요일 추가
-                                session.getFormattedTime(session.startTime),
-                                session.getFormattedTime(session.endTime),
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SessionDetail(
+                                        sessionDate: session.date, // 세션 날짜 전달
+                                        homeworkList: const [
+                                          // 여기에 API에서 받은 숙제 데이터를 넣습니다.
+                                        ],
+                                        feedbackList: const [
+                                          // 여기에 API에서 받은 피드백 데이터를 넣습니다.
+                                        ],
+                                        student:
+                                            widget.student, // Student 객체 전달
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: sessionBox(
+                                  session.getFormattedDate(),
+                                  session.day,
+                                  session.getFormattedTime(session.startTime),
+                                  session.getFormattedTime(session.endTime),
+                                ),
                               );
                             },
                           ),

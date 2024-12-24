@@ -4,6 +4,7 @@ import 'package:tutorpus/pages/signin_mem_select.dart';
 import 'package:tutorpus/pages/sample.dart';
 import 'package:tutorpus/pages/signup_teacher.dart';
 import 'package:tutorpus/pages/home_common.dart';
+import 'package:tutorpus/pages/session_detail.dart';
 
 void main() {
   runApp(const MyApp());

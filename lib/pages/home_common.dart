@@ -28,7 +28,7 @@ class _HomeCommonState extends State<HomeCommon> {
 
   @override
   void initState() {
-    print('initState called');
+    print('---------------Home common initState called');
     super.initState();
     _checkTokenAndFetchData();
   }

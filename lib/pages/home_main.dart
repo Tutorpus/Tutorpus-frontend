@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:tutorpus/utils/api_client.dart';
 import 'package:tutorpus/pages/login_main.dart'; // 로그인 페이지 import
 
 class HomeMain extends StatefulWidget {
@@ -63,19 +64,13 @@ class _HomeMainState extends State<HomeMain> {
     }
   }
 
-  // 2. 백엔드에서 연결된 학생 목록 가져오기
   Future<void> _fetchConnectedStudents(String token) async {
     const url = 'http://43.201.11.102:8080/student'; // 백엔드 API 주소
+    final client = ApiClient();
 
     try {
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Authorization': token, // 인증 토큰 추가
-          'Content-Type': 'application/json',
-        },
-      );
-      print('$token   header updated');
+      final response = await client.get(url);
+      print('Authorization Header: $token');
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
@@ -85,7 +80,6 @@ class _HomeMainState extends State<HomeMain> {
           isLoading = false;
         });
       } else if (response.statusCode == 401) {
-        // 토큰 만료
         print('Token expired. Redirecting to login.');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Session expired. Please login again.')),
