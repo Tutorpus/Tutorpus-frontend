@@ -48,6 +48,15 @@ class _SessionDetailState extends State<SessionDetail> {
     );
   }
 
+  String formatToIso8601(String inputDate) {
+    try {
+      final parsedDate = DateTime.parse(inputDate);
+      return DateFormat('yyyy-MM-ddTHH:mm:ss').format(parsedDate);
+    } catch (e) {
+      throw Exception("Invalid date format: $inputDate");
+    }
+  }
+
   // 피드백 데이터를 가져오는 함수
   Future<List<Map<String, dynamic>>> fetchFeedback(
       int connectId, DateTime date, String startTime) async {
@@ -100,6 +109,7 @@ class _SessionDetailState extends State<SessionDetail> {
     }
   }
 
+  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,9 +190,7 @@ class _SessionDetailState extends State<SessionDetail> {
                 ),
                 child: Column(
                   children: [
-                    const SizedBox(
-                      height: 30,
-                    ),
+                    const SizedBox(height: 30),
                     // 탭 버튼
                     _buildTabButtons(),
                     const SizedBox(height: 10),
@@ -199,7 +207,181 @@ class _SessionDetailState extends State<SessionDetail> {
           ],
         ),
       ),
+      // Floating Action Button
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          if (_isHomeworkSelected) {
+            _showHomeworkForm(context);
+          } else {
+            _showFeedbackForm(context);
+          }
+        },
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
+  }
+
+  void _showHomeworkForm(BuildContext context) {
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
+    final endDateController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("숙제 추가"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: "숙제 제목"),
+              ),
+              TextField(
+                controller: contentController,
+                decoration: const InputDecoration(labelText: "숙제 내용"),
+              ),
+              TextField(
+                controller: endDateController,
+                decoration: const InputDecoration(
+                  labelText: "마감 날짜 (yyyy-MM-dd HH:mm:ss)",
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("취소"),
+            ),
+            TextButton(
+              onPressed: () async {
+                final title = titleController.text;
+                final content = contentController.text;
+                final endDate =
+                    formatToIso8601(endDateController.text); // 날짜 포맷 변환
+
+                await _submitHomework(title, content, endDate);
+                Navigator.pop(context);
+              },
+              child: const Text("등록"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// 피드백 등록 폼
+  void _showFeedbackForm(BuildContext context) {
+    final participateController = TextEditingController();
+    final applyController = TextEditingController();
+    final homeworkController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("피드백 추가"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: participateController,
+                decoration: const InputDecoration(labelText: "참여도"),
+              ),
+              TextField(
+                controller: applyController,
+                decoration: const InputDecoration(labelText: "적용도"),
+              ),
+              TextField(
+                controller: homeworkController,
+                decoration: const InputDecoration(labelText: "숙제 수행"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("취소"),
+            ),
+            TextButton(
+              onPressed: () async {
+                final participate = participateController.text;
+                final apply = applyController.text;
+                final homework = homeworkController.text;
+
+                // 서버에 전송하는 로직 (예시)
+                await _submitFeedback(participate, apply, homework);
+                Navigator.pop(context);
+              },
+              child: const Text("등록"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _submitHomework(
+      String title, String content, String endDate) async {
+    const url = "http://43.201.11.102:8080/homework/add";
+    final client = ApiClient();
+
+    final body = {
+      "connectId": widget.student.connectId,
+      "classDate": DateFormat('yyyy-MM-ddTHH:mm:ss')
+          .format(widget.sessionDate), // ISO 8601 변환
+      "title": title,
+      "content": content,
+      "endDate": endDate, // 이미 포맷된 값 사용
+    };
+
+    try {
+      final response = await client.post(url, body);
+      if (response.statusCode == 200) {
+        print("숙제 등록 성공");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("숙제가 성공적으로 등록되었습니다.")),
+        );
+      } else {
+        print("숙제 등록 실패: ${response.body}");
+        throw Exception("숙제 등록 실패: ${response.body}");
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("숙제 등록에 실패했습니다.")),
+      );
+    }
+  }
+
+// 서버에 피드백 데이터 전송
+  Future<void> _submitFeedback(
+      String participate, String apply, String homework) async {
+    const url = "http://43.201.11.102:8080/feedback/add";
+    final client = ApiClient();
+
+    final body = {
+      "participate": participate,
+      "apply": apply,
+      "homework": homework,
+      "date": DateFormat('yyyy-MM-dd').format(widget.sessionDate),
+      "connectId": widget.student.connectId,
+    };
+
+    try {
+      final response = await client.post(url, body);
+      if (response.statusCode == 200) {
+        print("피드백 등록 성공");
+      } else {
+        throw Exception("피드백 등록 실패");
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
   }
 
   // 탭 버튼

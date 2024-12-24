@@ -90,7 +90,10 @@ class _StudentDetailState extends State<StudentDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('학생 상세 정보'),
+        title: const Text(
+          '학생 상세 정보',
+          style: TextStyle(color: white),
+        ),
         backgroundColor: Colors.blue,
         elevation: 0.0,
       ),
