@@ -106,9 +106,9 @@ class _SessionDetailState extends State<SessionDetail> {
       appBar: AppBar(
         title: Text(
           DateFormat('MM월 dd일 정규수업').format(widget.sessionDate),
-          style: const TextStyle(color: blue),
+          style: const TextStyle(color: white),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.blue,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -168,14 +168,33 @@ class _SessionDetailState extends State<SessionDetail> {
                 ],
               ),
             ),
-            // 탭 버튼
-            _buildTabButtons(),
-            const SizedBox(height: 10),
-            // 숙제 리스트 또는 수업 피드백 내용
+            // 흰색 배경 컨테이너 (탭 버튼과 리스트 포함)
             Expanded(
-              child: _isHomeworkSelected
-                  ? _buildHomeworkList()
-                  : _buildFeedbackList(),
+              child: Container(
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    topRight: Radius.circular(40),
+                  ),
+                  color: Colors.white,
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(
+                      height: 30,
+                    ),
+                    // 탭 버튼
+                    _buildTabButtons(),
+                    const SizedBox(height: 10),
+                    // 리스트 내용
+                    Expanded(
+                      child: _isHomeworkSelected
+                          ? _buildHomeworkList()
+                          : _buildFeedbackList(),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -253,7 +272,7 @@ class _SessionDetailState extends State<SessionDetail> {
             return const Center(
               child: Text(
                 '숙제가 없습니다.',
-                style: TextStyle(fontSize: 16, color: Colors.black),
+                style: TextStyle(fontSize: 21, color: darkestblue),
               ),
             );
           }
@@ -269,15 +288,22 @@ class _SessionDetailState extends State<SessionDetail> {
                 margin:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 color: Colors.lightBlue[50],
-                child: ListTile(
-                  title: Text(
-                    homework['title'],
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(homework['content']),
-                  trailing: Text(
-                    '~$dueDate',
-                    style: const TextStyle(color: Colors.blue),
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: ListTile(
+                    title: Text(
+                      homework['title'],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 21,
+                          color: darkestblue),
+                    ),
+                    subtitle: Text(homework['content']),
+                    trailing: Text(
+                      '~$dueDate',
+                      style: const TextStyle(
+                          color: darkblue, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               );
@@ -306,7 +332,7 @@ class _SessionDetailState extends State<SessionDetail> {
             return const Center(
               child: Text(
                 '수업 피드백이 없습니다.',
-                style: TextStyle(fontSize: 16, color: Colors.black),
+                style: TextStyle(fontSize: 21, color: darkestblue),
               ),
             );
           }
@@ -315,19 +341,26 @@ class _SessionDetailState extends State<SessionDetail> {
             itemCount: feedbackList.length,
             itemBuilder: (context, index) {
               final feedback = feedbackList[index];
+
               return Card(
                 margin:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 color: Colors.lightBlue[50],
-                child: ListTile(
-                  title: const Text(
-                    '수업 피드백',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    '참여도: ${feedback['participate']} (${feedback['participateScore']}점)\n'
-                    '적용도: ${feedback['apply']} (${feedback['applyScore']}점)\n'
-                    '숙제 수행: ${feedback['homework']} (${feedback['homeworkScore']}점)',
+                child: Padding(
+                  padding: const EdgeInsets.all(10), // 원하는 패딩 값 설정
+                  child: ListTile(
+                    title: const Text(
+                      '수업 피드백',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 21,
+                          color: darkestblue),
+                    ),
+                    subtitle: Text(
+                      '참여도: ${feedback['participate']} (${feedback['participateScore']}점)\n'
+                      '적용도: ${feedback['apply']} (${feedback['applyScore']}점)\n'
+                      '숙제 완성도: ${feedback['homework']} (${feedback['homeworkScore']}점)',
+                    ),
                   ),
                 ),
               );
